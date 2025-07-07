@@ -1,6 +1,6 @@
 package com.yupi.yupao.service;
 
-import com.yupi.yupao.model.User;
+import com.yupi.yupao.model.domain.User;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;

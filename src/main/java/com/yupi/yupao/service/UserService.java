@@ -1,9 +1,10 @@
 package com.yupi.yupao.service;
 
-import com.yupi.yupao.model.User;
+import com.yupi.yupao.model.domain.User;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 /**
@@ -22,6 +23,8 @@ public interface UserService extends IService<User> {
      * @return 新用户 id
      */
     long userRegister(String userAccount, String userPassword, String checkPassword);
+
+    Integer updateUser(User user,User loginUser);
 
     /**
      * 用户登录

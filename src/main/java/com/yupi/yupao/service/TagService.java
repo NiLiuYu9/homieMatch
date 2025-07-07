@@ -1,6 +1,6 @@
 package com.yupi.yupao.service;
 
-import com.yupi.yupao.model.Tag;
+import com.yupi.yupao.model.domain.Tag;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 /**

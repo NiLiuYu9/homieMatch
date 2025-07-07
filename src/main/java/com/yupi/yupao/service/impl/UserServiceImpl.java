@@ -1,12 +1,13 @@
 package com.yupi.yupao.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.yupi.yupao.common.ErrorCode;
 import com.yupi.yupao.exception.BusinessException;
-import com.yupi.yupao.model.User;
+import com.yupi.yupao.model.domain.User;
 import com.yupi.yupao.service.UserService;
 import com.yupi.yupao.mapper.UserMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -17,12 +18,15 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.DigestUtils;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static com.yupi.yupao.constant.UserConstant.ADMIN_ROLE;
 import static com.yupi.yupao.constant.UserConstant.USER_LOGIN_STATE;
 
 /**
@@ -83,6 +87,20 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             return -1;
         }
         return user.getId();
+    }
+
+    @Override
+    public Integer updateUser(User user,User loginUser) {
+        LambdaQueryWrapper<User> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(User::getId,user.getId());
+        Long count = userMapper.selectCount(lambdaQueryWrapper);
+        if (count==0){
+            throw new BusinessException(ErrorCode.NULL_ERROR);
+        }
+        if (user.getId()==loginUser.getId() || isAdmin(loginUser)){
+            return userMapper.update(user, lambdaQueryWrapper);
+        }
+        return 0;
     }
 
     // [加入编程导航](https://www.code-nav.cn/) 入门捷径+交流答疑+项目实战+求职指导，帮你自学编程不走弯路
@@ -215,6 +233,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             return true;
         }
         ).map(this::getSafetyUser).collect(Collectors.toList());
+    }
+
+    public Boolean isAdmin(User user) {
+        if (user.getUserRole()==ADMIN_ROLE){
+            return true;
+        }
+        return false;
     }
 }
 

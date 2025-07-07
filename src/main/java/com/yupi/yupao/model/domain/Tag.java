@@ -1,7 +1,8 @@
-package com.yupi.yupao.model;
+package com.yupi.yupao.model.domain;
 
 import com.baomidou.mybatisplus.annotation.*;
 
+import java.io.Serializable;
 import java.util.Date;
 import lombok.Data;
 
@@ -11,7 +12,7 @@ import lombok.Data;
  */
 @TableName(value ="tag")
 @Data
-public class Tag {
+public class Tag implements Serializable {
     /**
      * id
      */
