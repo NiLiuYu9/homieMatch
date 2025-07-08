@@ -1,6 +1,10 @@
 package com.yupi.yupao.model.domain;
 
 import com.baomidou.mybatisplus.annotation.*;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.yupi.yupao.serializer.GenderDeserializer;
+import com.yupi.yupao.serializer.GenderSerializer;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -39,6 +43,9 @@ public class User implements Serializable {
     /**
      * 性别
      */
+
+    @JsonDeserialize(using = GenderDeserializer.class)  // 自定义反序列化器
+    @JsonSerialize(using = GenderSerializer.class)     // 自定义序列化器
     private Integer gender;
 
     /**

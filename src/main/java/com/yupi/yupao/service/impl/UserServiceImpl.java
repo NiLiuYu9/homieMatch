@@ -189,6 +189,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         safetyUser.setUserStatus(originUser.getUserStatus());
         safetyUser.setCreateTime(originUser.getCreateTime());
         safetyUser.setTags(originUser.getTags());
+        safetyUser.setPlanetCode(originUser.getPlanetCode());
         return safetyUser;
     }
 
@@ -215,6 +216,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
     @Override
     public List<User> searchUserByTagByMemory(List<String> selectTagNameList) {
+        if (CollectionUtils.isEmpty(selectTagNameList)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
         List<User> list = this.list();
         return list.stream().filter(user-> {
             String tagsStr = user.getTags();
