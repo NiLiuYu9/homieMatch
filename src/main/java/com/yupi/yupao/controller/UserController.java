@@ -12,22 +12,28 @@ import com.yupi.yupao.model.domain.User;
 import com.yupi.yupao.model.request.UserLoginRequest;
 import com.yupi.yupao.model.request.UserRegisterRequest;
 import com.yupi.yupao.service.UserService;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.concurrent.TimeUnit;
 
 @RestController
 @RequestMapping("/user")
 @CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
+@Slf4j
 public class UserController {
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private RedisTemplate redisTemplate;
 
     @PostMapping("/update")
     public BaseResponse<Integer> updateUser(@RequestBody User user,HttpServletRequest request){
@@ -95,9 +101,29 @@ public class UserController {
     }
 
     @GetMapping("recommend")
-    public BaseResponse<Page<User>> recommendUsers(long pageSize, long pageNum){
+    public BaseResponse<Page<User>> recommendUsers(long pageSize, long pageNum,HttpServletRequest request){
+        User loginUser;
+        try {
+
+            loginUser = userService.getLoginUser(request);
+        }catch (BusinessException e){
+            Page<User> normalResult = (Page<User>) redisTemplate.opsForValue().get("homieMatch:user:recommend:normal");
+            return ResultUtils.success(normalResult);
+        }
+        ValueOperations valueOperations = redisTemplate.opsForValue();
+        String redisKey =  String.format("homieMatch:user:recommend:%s",loginUser.getId());
+        Page<User> cacheResult = (Page<User>) valueOperations.get(redisKey);
+        if (null != cacheResult) {
+            return ResultUtils.success(cacheResult);
+        }
+
         Page<User> page = new Page<>(pageNum, pageSize);
         Page<User> userPage = userService.page(page, new QueryWrapper<>());
+        try {
+            valueOperations.set(redisKey, userPage, 30000, TimeUnit.MILLISECONDS);
+        } catch (Exception e) {
+            log.error("redis set key error", e);
+        }
         return ResultUtils.success(userPage);
     }
 
